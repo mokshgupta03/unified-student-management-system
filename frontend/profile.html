@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile – Student Life</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><h1>🎓 Student Life</h1><span>Management System</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="academics.html" class="nav-item"><span class="nav-icon">📚</span> Academics</a>
+        <a href="health.html" class="nav-item"><span class="nav-icon">💪</span> Health</a>
+        <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span> Finance</a>
+        <a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="s-avatar">S</div>
+          <div class="user-details"><div class="user-name" id="s-name">Student</div><div class="user-id" id="s-sid"></div></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h2>👤 My Profile</h2>
+        <p>Manage your account information and password</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Profile Info -->
+        <div class="card">
+          <div style="text-align:center;margin-bottom:28px;">
+            <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;margin:0 auto 16px;" id="avatar-big">S</div>
+            <div style="font-size:22px;font-weight:800;" id="p-name">Loading...</div>
+            <div style="color:var(--text-muted);font-size:13px;margin-top:4px;" id="p-email"></div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.2);border-radius:99px;padding:4px 14px;margin-top:10px;font-size:12px;font-weight:600;color:var(--accent-light);" id="p-sid">🎫 Student ID</div>
+          </div>
+          <div class="card-title">✏️ Edit Profile</div>
+          <div class="form-group"><label class="form-label">Full Name</label><input id="edit-name" class="form-control" placeholder="Your full name" /></div>
+          <button class="btn btn-primary" style="width:100%" onclick="updateProfile()">💾 Save Changes</button>
+
+          <div style="margin-top:24px;">
+            <div class="card-title">📊 Account Info</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;justify-content:space-between;padding:10px;background:var(--bg-card);border-radius:8px;">
+                <span style="color:var(--text-muted);font-size:13px;">Member since</span>
+                <span style="font-size:13px;font-weight:600;" id="p-joined">–</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-title">🔒 Change Password</div>
+            <div class="form-group"><label class="form-label">Current Password</label><input id="pw-current" type="password" class="form-control" placeholder="Enter current password" /></div>
+            <div class="form-group"><label class="form-label">New Password</label><input id="pw-new" type="password" class="form-control" placeholder="Minimum 6 characters" minlength="6" /></div>
+            <div class="form-group"><label class="form-label">Confirm New Password</label><input id="pw-confirm" type="password" class="form-control" placeholder="Repeat new password" /></div>
+            <button class="btn btn-primary" style="width:100%" onclick="changePassword()">🔒 Update Password</button>
+          </div>
+
+          <!-- Reminders Settings -->
+          <div class="card">
+            <div class="card-title">🔔 Smart Reminders</div>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Reminders are shown on your dashboard on every visit.</p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.2);border-radius:10px;">
+                <span style="font-size:22px;">💧</span>
+                <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Hydration Reminder</div><div style="font-size:12px;color:var(--text-muted);">Drink 8 glasses of water daily</div></div>
+                <div class="reminder-dot"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:10px;">
+                <span style="font-size:22px;">😴</span>
+                <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Sleep Reminder</div><div style="font-size:12px;color:var(--text-muted);">Get 7-8 hours of sleep</div></div>
+                <div class="reminder-dot"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:10px;">
+                <span style="font-size:22px;">🏃</span>
+                <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Exercise Reminder</div><div style="font-size:12px;color:var(--text-muted);">Stay active – workout daily</div></div>
+                <div class="reminder-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'index.html';
+    const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (localUser.name) { document.getElementById('s-name').textContent = localUser.name; document.getElementById('s-sid').textContent = localUser.studentId||''; document.getElementById('s-avatar').textContent = localUser.name[0].toUpperCase(); }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg;
+      c.appendChild(t); setTimeout(()=>{t.style.animation='fadeOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+    }
+    async function apiCall(ep, method='GET', body=null) {
+      const opts = { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      return (await fetch(`${API}${ep}`, opts)).json();
+    }
+
+    async function loadProfile() {
+      const data = await apiCall('/auth/profile');
+      document.getElementById('p-name').textContent = data.name;
+      document.getElementById('p-email').textContent = data.email;
+      document.getElementById('p-sid').textContent = `🎫 ${data.studentId}`;
+      document.getElementById('avatar-big').textContent = data.name[0].toUpperCase();
+      document.getElementById('edit-name').value = data.name;
+      document.getElementById('p-joined').textContent = new Date(data.createdAt).toLocaleDateString('en-IN',{year:'numeric',month:'long',day:'numeric'});
+    }
+
+    async function updateProfile() {
+      const name = document.getElementById('edit-name').value.trim();
+      if (!name) return showToast('Name is required', 'error');
+      const data = await apiCall('/auth/profile', 'PUT', { name });
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify({...localUser, ...data.user}));
+        showToast('Profile updated! ✅', 'success');
+        loadProfile();
+      }
+    }
+
+    async function changePassword() {
+      const currentPassword = document.getElementById('pw-current').value;
+      const newPassword = document.getElementById('pw-new').value;
+      const confirm = document.getElementById('pw-confirm').value;
+      if (!currentPassword || !newPassword) return showToast('All password fields required', 'error');
+      if (newPassword !== confirm) return showToast('New passwords do not match', 'error');
+      if (newPassword.length < 6) return showToast('Password must be at least 6 characters', 'error');
+      const data = await apiCall('/auth/change-password', 'PUT', { currentPassword, newPassword });
+      if (data.message === 'Password changed successfully.') {
+        showToast('Password changed! 🔒', 'success');
+        document.getElementById('pw-current').value=''; document.getElementById('pw-new').value=''; document.getElementById('pw-confirm').value='';
+      } else {
+        showToast(data.message || 'Error changing password', 'error');
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

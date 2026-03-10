@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academics – Student Life</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><h1>🎓 Student Life</h1><span>Management System</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="academics.html" class="nav-item active"><span class="nav-icon">📚</span> Academics</a>
+        <a href="health.html" class="nav-item"><span class="nav-icon">💪</span> Health</a>
+        <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span> Finance</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="s-avatar">S</div>
+          <div class="user-details"><div class="user-name" id="s-name">Student</div><div class="user-id" id="s-sid"></div></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h2>📚 Academics</h2>
+        <p>Manage your subjects, assignments, study plans, and GPA</p>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;width:fit-content;">
+        <button class="btn btn-primary btn-sm" id="tab-subjects" onclick="showSection('subjects')">📖 Subjects</button>
+        <button class="btn btn-outline btn-sm" id="tab-assignments" onclick="showSection('assignments')">📋 Assignments</button>
+        <button class="btn btn-outline btn-sm" id="tab-planner" onclick="showSection('planner')">🗓️ Study Planner</button>
+        <button class="btn btn-outline btn-sm" id="tab-gpa" onclick="showSection('gpa')">🎓 GPA Calc</button>
+      </div>
+
+      <!-- SUBJECTS -->
+      <section id="section-subjects">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">➕ Add Subject</div>
+            <div class="form-group"><label class="form-label">Subject Name</label><input id="sub-name" class="form-control" placeholder="e.g. Mathematics" /></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Color</label><input id="sub-color" type="color" class="form-control" value="#6c63ff" style="height:44px;padding:4px;" /></div>
+              <div class="form-group"><label class="form-label">Credits</label><input id="sub-credits" type="number" class="form-control" placeholder="3" value="3" min="1" max="6" /></div>
+            </div>
+            <button class="btn btn-primary" onclick="addSubject()">➕ Add Subject</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📖 Your Subjects</div>
+            <div id="subjects-list"><div class="empty-state"><div class="empty-icon">📚</div><p>No subjects yet</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ASSIGNMENTS -->
+      <section id="section-assignments" style="display:none;">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">➕ Add Assignment</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Title</label><input id="asgn-title" class="form-control" placeholder="Assignment title" /></div>
+            <div class="form-group"><label class="form-label">Subject</label><select id="asgn-subject" class="form-control"></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Due Date</label><input id="asgn-due" type="date" class="form-control" /></div>
+            <div class="form-group"><label class="form-label">Priority</label>
+              <select id="asgn-priority" class="form-control">
+                <option value="low">🟢 Low</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="high">🔴 High</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addAssignment()">➕ Add Assignment</button>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="card-title" style="margin-bottom:0;">📋 All Assignments</div>
+            <select id="filter-status" class="form-control" style="width:150px;" onchange="loadAssignments()">
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Title</th><th>Subject</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="assignments-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDY PLANNER -->
+      <section id="section-planner" style="display:none;">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">➕ Add Study Task</div>
+            <div class="form-group"><label class="form-label">Date</label><input id="plan-date" type="date" class="form-control" /></div>
+            <div class="form-group"><label class="form-label">Task Description</label><input id="plan-task" class="form-control" placeholder="e.g. Study Chapter 3 of Physics" /></div>
+            <div class="form-group"><label class="form-label">Duration (hours)</label><input id="plan-duration" type="number" class="form-control" placeholder="2" min="0.5" step="0.5" /></div>
+            <button class="btn btn-primary" onclick="addStudyPlan()">➕ Add Task</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🗓️ Today's Study Plan</div>
+            <div id="planner-list"><div class="empty-state"><div class="empty-icon">📅</div><p>No study tasks yet</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GPA CALCULATOR -->
+      <section id="section-gpa" style="display:none;">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">➕ Add Course Grade</div>
+            <div class="form-group"><label class="form-label">Subject Name</label><input id="grade-subject" class="form-control" placeholder="e.g. Mathematics" /></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Grade Points (0–4)</label>
+                <select id="grade-val" class="form-control">
+                  <option value="4">A+ / A (4.0)</option>
+                  <option value="3.7">A- (3.7)</option>
+                  <option value="3.3">B+ (3.3)</option>
+                  <option value="3">B (3.0)</option>
+                  <option value="2.7">B- (2.7)</option>
+                  <option value="2.3">C+ (2.3)</option>
+                  <option value="2">C (2.0)</option>
+                  <option value="1.7">C- (1.7)</option>
+                  <option value="1">D (1.0)</option>
+                  <option value="0">F (0.0)</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Credits</label><input id="grade-credits" type="number" class="form-control" placeholder="3" value="3" min="1" /></div>
+            </div>
+            <button class="btn btn-primary" onclick="addGrade()">➕ Add Grade</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="card-title" style="justify-content:center;">🎓 Your GPA</div>
+            <div id="gpa-display" style="font-size:72px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:20px 0;">–</div>
+            <div id="gpa-sub" style="color:var(--text-muted);font-size:14px;"></div>
+            <button class="btn btn-outline" style="margin-top:16px;" onclick="calcGPA()">🔄 Recalculate</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px;">
+          <div class="card-title">📊 Grade Records</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Subject</th><th>Grade Points</th><th>Credits</th><th>Actions</th></tr></thead>
+              <tbody id="grades-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = 'index.html';
+    if (user.name) { document.getElementById('s-name').textContent = user.name; document.getElementById('s-sid').textContent = user.studentId || ''; document.getElementById('s-avatar').textContent = user.name[0].toUpperCase(); }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg;
+      c.appendChild(t); setTimeout(()=>{t.style.animation='fadeOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+    }
+
+    async function apiCall(ep, method='GET', body=null) {
+      const opts = { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(`${API}${ep}`, opts);
+      return res.json();
+    }
+
+    // Tabs
+    const tabs = ['subjects','assignments','planner','gpa'];
+    function showSection(sec) {
+      tabs.forEach(t => {
+        document.getElementById(`section-${t}`).style.display = t===sec?'block':'none';
+        const btn = document.getElementById(`tab-${t}`);
+        btn.className = t===sec ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+      });
+      if(sec==='subjects') loadSubjects();
+      if(sec==='assignments') { loadSubjects(); loadAssignments(); }
+      if(sec==='planner') loadPlanner();
+      if(sec==='gpa') { loadGrades(); calcGPA(); }
+    }
+
+    // Set today's date as default
+    document.getElementById('plan-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('asgn-due').value = new Date().toISOString().split('T')[0];
+
+    // ===== SUBJECTS =====
+    let subjectsList = [];
+    async function loadSubjects() {
+      subjectsList = await apiCall('/academics/subjects');
+      const el = document.getElementById('subjects-list');
+      if (!subjectsList.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><p>No subjects yet</p></div>'; return; }
+      el.innerHTML = subjectsList.map(s=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:14px;height:14px;border-radius:50%;background:${s.color || '#6c63ff'};flex-shrink:0;"></div>
+          <div style="flex:1;font-size:14px;font-weight:600;">${s.name}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${s.credits} credits</div>
+          <button class="btn-icon" onclick="deleteSubject('${s._id}')">🗑️</button>
+        </div>`).join('');
+      // Populate assignment subject dropdown
+      const dd = document.getElementById('asgn-subject');
+      dd.innerHTML = '<option value="">-- Select Subject --</option>' + subjectsList.map(s=>`<option value="${s._id}" data-name="${s.name}">${s.name}</option>`).join('');
+    }
+
+    async function addSubject() {
+      const name = document.getElementById('sub-name').value.trim();
+      const color = document.getElementById('sub-color').value;
+      const credits = parseInt(document.getElementById('sub-credits').value) || 3;
+      if (!name) return showToast('Subject name is required', 'error');
+      await apiCall('/academics/subjects', 'POST', { name, color, credits });
+      document.getElementById('sub-name').value = '';
+      showToast('Subject added! 📚', 'success');
+      loadSubjects();
+    }
+
+    async function deleteSubject(id) {
+      await apiCall(`/academics/subjects/${id}`, 'DELETE');
+      showToast('Subject deleted', 'info'); loadSubjects();
+    }
+
+    // ===== ASSIGNMENTS =====
+    async function loadAssignments() {
+      const status = document.getElementById('filter-status').value;
+      const data = await apiCall('/academics/assignments');
+      const filtered = status ? data.filter(a=>a.status===status) : data;
+      const tbody = document.getElementById('assignments-tbody');
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No assignments found</td></tr>`; return; }
+      tbody.innerHTML = filtered.map(a=>{
+        const due = new Date(a.dueDate);
+        const overdue = due < new Date() && a.status==='pending';
+        return `<tr>
+          <td style="font-weight:600;${overdue?'color:var(--red)':''}">${a.title}${overdue?' ⚠️':''}</td>
+          <td>${a.subjectName||'–'}</td>
+          <td>${due.toLocaleDateString('en-IN')}</td>
+          <td><span class="badge badge-${a.priority}">${a.priority}</span></td>
+          <td><span class="badge badge-${a.status}">${a.status}</span></td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn btn-sm ${a.status==='completed'?'btn-outline':'btn-success'}" onclick="toggleAssignment('${a._id}','${a.status}')">${a.status==='completed'?'↩️ Undo':'✅ Done'}</button>
+            <button class="btn-icon" onclick="deleteAssignment('${a._id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function addAssignment() {
+      const title = document.getElementById('asgn-title').value.trim();
+      const dueDate = document.getElementById('asgn-due').value;
+      const priority = document.getElementById('asgn-priority').value;
+      const sel = document.getElementById('asgn-subject');
+      const subjectId = sel.value;
+      const subjectName = sel.options[sel.selectedIndex]?.dataset.name || 'General';
+      if (!title || !dueDate) return showToast('Title and due date required', 'error');
+      await apiCall('/academics/assignments', 'POST', { title, dueDate, priority, subjectId, subjectName });
+      document.getElementById('asgn-title').value = '';
+      showToast('Assignment added! 📋', 'success'); loadAssignments();
+    }
+
+    async function toggleAssignment(id, status) {
+      const newStatus = status === 'completed' ? 'pending' : 'completed';
+      await apiCall(`/academics/assignments/${id}`, 'PUT', { status: newStatus });
+      loadAssignments();
+    }
+
+    async function deleteAssignment(id) {
+      await apiCall(`/academics/assignments/${id}`, 'DELETE');
+      showToast('Assignment deleted', 'info'); loadAssignments();
+    }
+
+    // ===== STUDY PLANNER =====
+    async function loadPlanner() {
+      const date = document.getElementById('plan-date').value || new Date().toISOString().split('T')[0];
+      const data = await apiCall(`/academics/study-plans?date=${date}`);
+      const el = document.getElementById('planner-list');
+      if (!data.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🗓️</div><p>No tasks for this day</p></div>'; return; }
+      const totalHours = data.reduce((s,p)=>s+(p.duration||0),0);
+      el.innerHTML = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Total: ${totalHours}h planned</div>` +
+        data.map(p=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+            <input type="checkbox" ${p.completed?'checked':''} onchange="togglePlan('${p._id}')" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);" />
+            <div style="flex:1;${p.completed?'text-decoration:line-through;color:var(--text-muted)':''}">
+              <div style="font-size:14px;font-weight:600;">${p.task}</div>
+              <div style="font-size:12px;color:var(--text-muted);">${p.duration}h</div>
+            </div>
+            <button class="btn-icon" onclick="deletePlan('${p._id}')">🗑️</button>
+          </div>`).join('');
+    }
+
+    async function addStudyPlan() {
+      const date = document.getElementById('plan-date').value;
+      const task = document.getElementById('plan-task').value.trim();
+      const duration = parseFloat(document.getElementById('plan-duration').value) || 1;
+      if (!task || !date) return showToast('Task and date required', 'error');
+      await apiCall('/academics/study-plans', 'POST', { date, task, duration });
+      document.getElementById('plan-task').value = '';
+      showToast('Study task added! 📅', 'success'); loadPlanner();
+    }
+
+    async function togglePlan(id) {
+      await apiCall(`/academics/study-plans/${id}/toggle`, 'PUT');
+      loadPlanner();
+    }
+
+    async function deletePlan(id) {
+      await apiCall(`/academics/study-plans/${id}`, 'DELETE');
+      loadPlanner();
+    }
+
+    // ===== GPA =====
+    async function loadGrades() {
+      const data = await apiCall('/academics/grades');
+      const tbody = document.getElementById('grades-tbody');
+      if (!data.length) { tbody.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">No grades yet</td></tr>`; return; }
+      tbody.innerHTML = data.map(g=>`<tr>
+        <td style="font-weight:600;">${g.subject}</td>
+        <td>${g.grade}</td>
+        <td>${g.credits}</td>
+        <td><button class="btn-icon" onclick="deleteGrade('${g._id}')">🗑️</button></td>
+      </tr>`).join('');
+    }
+
+    async function addGrade() {
+      const subject = document.getElementById('grade-subject').value.trim();
+      const grade = parseFloat(document.getElementById('grade-val').value);
+      const credits = parseInt(document.getElementById('grade-credits').value) || 3;
+      if (!subject) return showToast('Subject name required', 'error');
+      await apiCall('/academics/grades', 'POST', { subject, grade, credits });
+      document.getElementById('grade-subject').value = '';
+      showToast('Grade added! 🎓', 'success'); loadGrades(); calcGPA();
+    }
+
+    async function deleteGrade(id) {
+      await apiCall(`/academics/grades/${id}`, 'DELETE');
+      loadGrades(); calcGPA();
+    }
+
+    async function calcGPA() {
+      const data = await apiCall('/academics/gpa');
+      document.getElementById('gpa-display').textContent = data.gpa || '0.00';
+      document.getElementById('gpa-sub').textContent = `${data.totalCourses || 0} courses · ${data.totalCredits || 0} credits`;
+    }
+
+    // Init
+    loadSubjects();
+  </script>
+</body>
+</html>

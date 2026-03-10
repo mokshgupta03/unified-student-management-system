@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health – Student Life</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><h1>🎓 Student Life</h1><span>Management System</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="academics.html" class="nav-item"><span class="nav-icon">📚</span> Academics</a>
+        <a href="health.html" class="nav-item active"><span class="nav-icon">💪</span> Health</a>
+        <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span> Finance</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="s-avatar">S</div>
+          <div class="user-details"><div class="user-name" id="s-name">Student</div><div class="user-id" id="s-sid"></div></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h2>💪 Health Tracker</h2>
+        <p>Track your daily wellness – water, sleep, workout, and steps</p>
+      </div>
+
+      <!-- Weekly Stats -->
+      <div class="stats-grid" style="margin-bottom:28px;" id="weekly-stats">
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#00b4d8,#0096c7);--icon-bg:rgba(0,180,216,0.15);">
+          <div class="stat-icon">💧</div>
+          <div class="stat-info"><div class="stat-value" id="avg-water">–</div><div class="stat-label">Avg. Water / Day</div></div>
+        </div>
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#6c63ff,#8b84ff);--icon-bg:rgba(108,99,255,0.15);">
+          <div class="stat-icon">😴</div>
+          <div class="stat-info"><div class="stat-value" id="avg-sleep">–</div><div class="stat-label">Avg. Sleep / Day</div></div>
+        </div>
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#00d4aa,#00f5c4);--icon-bg:rgba(0,212,170,0.15);">
+          <div class="stat-icon">🏃</div>
+          <div class="stat-info"><div class="stat-value" id="workout-days">–</div><div class="stat-label">Workout Days (week)</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:24px;">
+        <!-- Log Form -->
+        <div class="card">
+          <div class="card-title">📝 Log Today's Health</div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input id="h-date" type="date" class="form-control" />
+          </div>
+          <!-- Water Tracker -->
+          <div class="form-group">
+            <label class="form-label">💧 Water Intake (glasses)</label>
+            <div class="water-glasses" id="water-glasses-ui"></div>
+            <input id="h-water" type="hidden" value="0" />
+            <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Click glasses to log. Goal: 8 glasses/day 🥅</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">😴 Sleep Hours</label>
+              <input id="h-sleep" type="number" class="form-control" placeholder="7.5" min="0" max="24" step="0.5" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">👟 Steps Walked</label>
+              <input id="h-steps" type="number" class="form-control" placeholder="5000" min="0" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">🏋️ Workout Type</label>
+              <select id="h-workout" class="form-control">
+                <option value="None">None</option>
+                <option value="Running">🏃 Running</option>
+                <option value="Gym">💪 Gym</option>
+                <option value="Yoga">🧘 Yoga</option>
+                <option value="Cycling">🚴 Cycling</option>
+                <option value="Swimming">🏊 Swimming</option>
+                <option value="Sports">⚽ Sports</option>
+                <option value="Walk">🚶 Walk</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">⏱️ Duration (min)</label>
+              <input id="h-duration" type="number" class="form-control" placeholder="30" min="0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">😊 Mood</label>
+            <select id="h-mood" class="form-control">
+              <option value="great">😁 Great</option>
+              <option value="good" selected>😊 Good</option>
+              <option value="okay">😐 Okay</option>
+              <option value="bad">😔 Bad</option>
+              <option value="terrible">😫 Terrible</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="saveHealthLog()">💾 Save Today's Log</button>
+        </div>
+
+        <!-- Recent Logs -->
+        <div class="card">
+          <div class="card-title">📋 Recent Health Logs</div>
+          <div id="logs-list" style="display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">💧 Weekly Water Intake</div>
+          <div class="chart-container"><canvas id="waterChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">😴 Weekly Sleep Pattern</div>
+          <div class="chart-container"><canvas id="sleepChart"></canvas></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = 'index.html';
+    if (user.name) { document.getElementById('s-name').textContent = user.name; document.getElementById('s-sid').textContent = user.studentId||''; document.getElementById('s-avatar').textContent = user.name[0].toUpperCase(); }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg;
+      c.appendChild(t); setTimeout(()=>{t.style.animation='fadeOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+    }
+    async function apiCall(ep, method='GET', body=null) {
+      const opts = { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      return (await fetch(`${API}${ep}`, opts)).json();
+    }
+
+    // Init date
+    document.getElementById('h-date').value = new Date().toISOString().split('T')[0];
+
+    // ===== WATER GLASSES UI =====
+    let waterCount = 0;
+    function renderGlasses(count) {
+      waterCount = count;
+      document.getElementById('h-water').value = count;
+      const ui = document.getElementById('water-glasses-ui');
+      ui.innerHTML = Array.from({length:10},(_,i)=>
+        `<div class="glass ${i<count?'filled':''}" onclick="setWater(${i+1})" title="${i+1} glass${i?'es':''}">💧</div>`
+      ).join('');
+    }
+    function setWater(n) { renderGlasses(waterCount===n ? n-1 : n); }
+    renderGlasses(0);
+
+    // ===== SAVE LOG =====
+    async function saveHealthLog() {
+      const body = {
+        date: document.getElementById('h-date').value,
+        waterGlasses: parseInt(document.getElementById('h-water').value)||0,
+        sleepHours: parseFloat(document.getElementById('h-sleep').value)||0,
+        steps: parseInt(document.getElementById('h-steps').value)||0,
+        workoutType: document.getElementById('h-workout').value,
+        workoutDuration: parseInt(document.getElementById('h-duration').value)||0,
+        mood: document.getElementById('h-mood').value
+      };
+      if (!body.date) return showToast('Date is required', 'error');
+      await apiCall('/health/log', 'POST', body);
+      showToast('Health log saved! 💪', 'success');
+      loadAll();
+    }
+
+    // ===== LOAD RECENT LOGS =====
+    async function loadLogs() {
+      const data = await apiCall('/health/log');
+      const el = document.getElementById('logs-list');
+      if (!data.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🏥</div><p>No logs yet</p></div>'; return; }
+      el.innerHTML = data.map(l=>`
+        <div style="background:var(--bg-card);border-radius:10px;padding:14px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:700;font-size:13px;">${l.date}</span>
+            <span style="font-size:18px;">${{great:'😁',good:'😊',okay:'😐',bad:'😔',terrible:'😫'}[l.mood]||'😊'}</span>
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);">
+            <span>💧 ${l.waterGlasses} glasses</span>
+            <span>😴 ${l.sleepHours}h sleep</span>
+            <span>👟 ${l.steps?.toLocaleString()} steps</span>
+            <span>🏋️ ${l.workoutType||'None'}</span>
+          </div>
+        </div>`).join('');
+    }
+
+    // ===== LOAD WEEKLY STATS + CHARTS =====
+    let wChart, sChart;
+    async function loadWeekly() {
+      const data = await apiCall('/health/weekly');
+      document.getElementById('avg-water').textContent = data.avgWater + ' 💧';
+      document.getElementById('avg-sleep').textContent = data.avgSleep + 'h';
+      document.getElementById('workout-days').textContent = `${data.workoutDays}/7`;
+
+      const labels = data.labels?.map(d => {
+        const parts = d.split('-'); return `${parts[2]}/${parts[1]}`;
+      }) || [];
+      const waters = data.weekly?.map(w=>w.waterGlasses||0)||[];
+      const sleeps = data.weekly?.map(w=>w.sleepHours||0)||[];
+
+      const chartOpts = (color) => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#ccc' } } },
+        scales: { x: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      });
+
+      if (wChart) wChart.destroy();
+      wChart = new Chart(document.getElementById('waterChart'), {
+        type: 'bar', data: { labels, datasets: [{ label: 'Glasses', data: waters, backgroundColor: 'rgba(0,180,216,0.6)', borderColor: '#00b4d8', borderWidth: 2, borderRadius: 8 }] },
+        options: chartOpts('#00b4d8')
+      });
+
+      if (sChart) sChart.destroy();
+      sChart = new Chart(document.getElementById('sleepChart'), {
+        type: 'line', data: { labels, datasets: [{ label: 'Hours', data: sleeps, borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,0.15)', fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#6c63ff' }] },
+        options: chartOpts('#6c63ff')
+      });
+    }
+
+    async function loadAll() { loadLogs(); loadWeekly(); }
+
+    // Load today's log
+    async function loadToday() {
+      const data = await apiCall('/health/today');
+      if (data.waterGlasses) renderGlasses(data.waterGlasses);
+      if (data.sleepHours) document.getElementById('h-sleep').value = data.sleepHours;
+      if (data.steps) document.getElementById('h-steps').value = data.steps;
+      if (data.workoutType) document.getElementById('h-workout').value = data.workoutType;
+      if (data.workoutDuration) document.getElementById('h-duration').value = data.workoutDuration;
+      if (data.mood) document.getElementById('h-mood').value = data.mood;
+    }
+
+    loadToday(); loadAll();
+  </script>
+</body>
+</html>

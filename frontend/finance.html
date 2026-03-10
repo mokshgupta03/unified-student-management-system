@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance – Student Life</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><h1>🎓 Student Life</h1><span>Management System</span></div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="academics.html" class="nav-item"><span class="nav-icon">📚</span> Academics</a>
+        <a href="health.html" class="nav-item"><span class="nav-icon">💪</span> Health</a>
+        <a href="finance.html" class="nav-item active"><span class="nav-icon">💰</span> Finance</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="s-avatar">S</div>
+          <div class="user-details"><div class="user-name" id="s-name">Student</div><div class="user-id" id="s-sid"></div></div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h2>💰 Finance Tracker</h2>
+        <p>Track your income, expenses, and monthly budget</p>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="stats-grid" style="margin-bottom:28px;">
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#00d4aa,#00f5c4);--icon-bg:rgba(0,212,170,0.15);">
+          <div class="stat-icon">💵</div>
+          <div class="stat-info"><div class="stat-value" id="s-income">₹0</div><div class="stat-label">Monthly Income</div></div>
+        </div>
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#ff4d6d,#ff7c93);--icon-bg:rgba(255,77,109,0.15);">
+          <div class="stat-icon">💸</div>
+          <div class="stat-info"><div class="stat-value" id="s-expense">₹0</div><div class="stat-label">Monthly Expenses</div></div>
+        </div>
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#6c63ff,#8b84ff);--icon-bg:rgba(108,99,255,0.15);">
+          <div class="stat-icon">🏦</div>
+          <div class="stat-info"><div class="stat-value" id="s-balance">₹0</div><div class="stat-label">Balance</div></div>
+        </div>
+        <div class="stat-card" style="--card-accent:linear-gradient(90deg,#ff9f43,#ffcc00);--icon-bg:rgba(255,159,67,0.15);">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-info"><div class="stat-value" id="s-budget">₹0</div><div class="stat-label">Monthly Budget</div></div>
+        </div>
+      </div>
+
+      <!-- Budget Progress -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">🎯 Budget Usage</div>
+        <div id="budget-progress-wrap">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
+            <span id="budget-left" style="color:var(--text-muted);">Set a budget to track usage</span>
+            <span id="budget-pct" style="color:var(--accent-light);font-weight:700;"></span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar" id="budget-bar" style="width:0%;"></div></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;width:fit-content;">
+        <button class="btn btn-primary btn-sm" id="tab-expenses" onclick="setTab('expenses')">💸 Expenses</button>
+        <button class="btn btn-outline btn-sm" id="tab-income" onclick="setTab('income')">💵 Income</button>
+        <button class="btn btn-outline btn-sm" id="tab-budget" onclick="setTab('budget')">🎯 Budget</button>
+        <button class="btn btn-outline btn-sm" id="tab-analytics" onclick="setTab('analytics')">📊 Analytics</button>
+      </div>
+
+      <!-- EXPENSES SECTION -->
+      <section id="sec-expenses">
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div class="card">
+            <div class="card-title">➕ Add Expense</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Amount (₹)</label><input id="ex-amount" type="number" class="form-control" placeholder="0.00" min="0" step="0.01" /></div>
+              <div class="form-group"><label class="form-label">Date</label><input id="ex-date" type="date" class="form-control" /></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="ex-category" class="form-control">
+                <option value="food">🍔 Food</option>
+                <option value="transport">🚌 Transport</option>
+                <option value="books">📚 Books</option>
+                <option value="entertainment">🎮 Entertainment</option>
+                <option value="health">💊 Health</option>
+                <option value="clothing">👕 Clothing</option>
+                <option value="miscellaneous">🗂️ Miscellaneous</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Note (optional)</label><input id="ex-note" class="form-control" placeholder="What was this for?" /></div>
+            <button class="btn btn-danger" style="width:100%" onclick="addExpense()">➕ Add Expense</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 Category Breakdown</div>
+            <div class="chart-container"><canvas id="pieChart"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Expense List</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Category</th><th>Note</th><th>Amount</th><th>Action</th></tr></thead>
+              <tbody id="exp-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- INCOME SECTION -->
+      <section id="sec-income" style="display:none;">
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div class="card">
+            <div class="card-title">➕ Add Income</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Amount (₹)</label><input id="in-amount" type="number" class="form-control" placeholder="0.00" /></div>
+              <div class="form-group"><label class="form-label">Date</label><input id="in-date" type="date" class="form-control" /></div>
+            </div>
+            <div class="form-group"><label class="form-label">Source</label><input id="in-source" class="form-control" placeholder="e.g. Scholarship, Allowance, Part-time job" /></div>
+            <div class="form-group"><label class="form-label">Note (optional)</label><input id="in-note" class="form-control" placeholder="Additional details" /></div>
+            <button class="btn btn-success" style="width:100%" onclick="addIncome()">➕ Add Income</button>
+          </div>
+          <div class="card">
+            <div class="card-title">💵 Income Records</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Source</th><th>Note</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="inc-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUDGET SECTION -->
+      <section id="sec-budget" style="display:none;">
+        <div class="card" style="max-width:500px;">
+          <div class="card-title">🎯 Set Monthly Budget</div>
+          <div class="form-group"><label class="form-label">Month</label><input id="b-month" type="month" class="form-control" /></div>
+          <div class="form-group"><label class="form-label">Total Budget (₹)</label><input id="b-total" type="number" class="form-control" placeholder="15000" /></div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;margin-top:4px;">Category Budgets (optional)</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">🍔 Food</label><input id="b-food" type="number" class="form-control" placeholder="5000" /></div>
+            <div class="form-group"><label class="form-label">🚌 Transport</label><input id="b-transport" type="number" class="form-control" placeholder="1500" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">📚 Books</label><input id="b-books" type="number" class="form-control" placeholder="2000" /></div>
+            <div class="form-group"><label class="form-label">🎮 Entertainment</label><input id="b-ent" type="number" class="form-control" placeholder="1000" /></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="saveBudget()">💾 Save Budget</button>
+        </div>
+      </section>
+
+      <!-- ANALYTICS SECTION -->
+      <section id="sec-analytics" style="display:none;">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📈 Monthly Expense Trend (6 months)</div>
+            <div class="chart-container"><canvas id="barChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">💰 Income vs Expenses</div>
+            <div class="chart-container"><canvas id="compareChart"></canvas></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = 'index.html';
+    if (user.name) { document.getElementById('s-name').textContent = user.name; document.getElementById('s-sid').textContent = user.studentId||''; document.getElementById('s-avatar').textContent = user.name[0].toUpperCase(); }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg;
+      c.appendChild(t); setTimeout(()=>{t.style.animation='fadeOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+    }
+    async function apiCall(ep, method='GET', body=null) {
+      const opts = { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      return (await fetch(`${API}${ep}`, opts)).json();
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const thisMonth = today.substring(0,7);
+    document.getElementById('ex-date').value = today;
+    document.getElementById('in-date').value = today;
+    document.getElementById('b-month').value = thisMonth;
+
+    const catEmoji = {food:'🍔',transport:'🚌',books:'📚',entertainment:'🎮',health:'💊',clothing:'👕',miscellaneous:'🗂️'};
+    const catColors = {food:'#ff6b6b',transport:'#4ecdc4',books:'#a8e063',entertainment:'#f7b731',health:'#26de81',clothing:'#fd79a8',miscellaneous:'#a29bfe'};
+
+    // ===== TABS =====
+    const sections = ['expenses','income','budget','analytics'];
+    function setTab(tab) {
+      sections.forEach(s => {
+        document.getElementById(`sec-${s}`).style.display = s===tab?'block':'none';
+        const btn = document.getElementById(`tab-${s}`);
+        btn.className = s===tab?'btn btn-primary btn-sm':'btn btn-outline btn-sm';
+      });
+      if (tab==='expenses') loadExpenses();
+      if (tab==='income') loadIncome();
+      if (tab==='analytics') loadAnalytics();
+    }
+
+    // ===== EXPENSES =====
+    let pieChart;
+    async function loadExpenses() {
+      const data = await apiCall(`/finance/expenses?month=${thisMonth}`);
+      const tbody = document.getElementById('exp-tbody');
+      if (!data.length) { tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No expenses this month</td></tr>`; }
+      else {
+        tbody.innerHTML = data.map(e=>`<tr>
+          <td>${e.date}</td>
+          <td><span class="cat-${e.category}">${catEmoji[e.category]||'🗂️'} ${e.category}</span></td>
+          <td style="color:var(--text-muted);">${e.note||'–'}</td>
+          <td style="font-weight:700;color:var(--red);">₹${e.amount.toLocaleString()}</td>
+          <td><button class="btn-icon" onclick="deleteExpense('${e._id}')">🗑️</button></td>
+        </tr>`).join('');
+      }
+
+      // Pie chart
+      const cats = {}; data.forEach(e=>cats[e.category]=(cats[e.category]||0)+e.amount);
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(cats).map(k=>`${catEmoji[k]||''} ${k}`),
+          datasets: [{ data: Object.values(cats), backgroundColor: Object.keys(cats).map(k=>catColors[k]||'#888'), borderWidth: 3, borderColor: '#12121a' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#ccc', padding: 12 }, position: 'bottom' } } }
+      });
+    }
+
+    async function addExpense() {
+      const amount = parseFloat(document.getElementById('ex-amount').value);
+      const date = document.getElementById('ex-date').value;
+      const category = document.getElementById('ex-category').value;
+      const note = document.getElementById('ex-note').value;
+      if (!amount || !date) return showToast('Amount and date required', 'error');
+      await apiCall('/finance/expenses', 'POST', { amount, date, category, note });
+      document.getElementById('ex-amount').value=''; document.getElementById('ex-note').value='';
+      showToast('Expense added! 💸', 'success'); loadExpenses(); loadSummary();
+    }
+
+    async function deleteExpense(id) {
+      await apiCall(`/finance/expenses/${id}`, 'DELETE');
+      showToast('Expense deleted', 'info'); loadExpenses(); loadSummary();
+    }
+
+    // ===== INCOME =====
+    async function loadIncome() {
+      const data = await apiCall(`/finance/income?month=${thisMonth}`);
+      const tbody = document.getElementById('inc-tbody');
+      if (!data.length) { tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No income this month</td></tr>`; return; }
+      tbody.innerHTML = data.map(i=>`<tr>
+        <td>${i.date}</td>
+        <td style="font-weight:600;">${i.source}</td>
+        <td style="color:var(--text-muted);">${i.note||'–'}</td>
+        <td style="font-weight:700;color:var(--green);">₹${i.amount.toLocaleString()}</td>
+        <td><button class="btn-icon" onclick="deleteIncome('${i._id}')">🗑️</button></td>
+      </tr>`).join('');
+    }
+
+    async function addIncome() {
+      const amount = parseFloat(document.getElementById('in-amount').value);
+      const date = document.getElementById('in-date').value;
+      const source = document.getElementById('in-source').value.trim();
+      const note = document.getElementById('in-note').value;
+      if (!amount || !date || !source) return showToast('Amount, date, and source required', 'error');
+      await apiCall('/finance/income', 'POST', { amount, date, source, note });
+      document.getElementById('in-amount').value=''; document.getElementById('in-source').value=''; document.getElementById('in-note').value='';
+      showToast('Income added! 💵', 'success'); loadIncome(); loadSummary();
+    }
+
+    async function deleteIncome(id) {
+      await apiCall(`/finance/income/${id}`, 'DELETE');
+      showToast('Income deleted', 'info'); loadIncome(); loadSummary();
+    }
+
+    // ===== BUDGET =====
+    async function saveBudget() {
+      const totalBudget = parseFloat(document.getElementById('b-total').value);
+      const month = document.getElementById('b-month').value;
+      if (!totalBudget) return showToast('Total budget required', 'error');
+      const categoryBudgets = {
+        food: parseFloat(document.getElementById('b-food').value)||0,
+        transport: parseFloat(document.getElementById('b-transport').value)||0,
+        books: parseFloat(document.getElementById('b-books').value)||0,
+        entertainment: parseFloat(document.getElementById('b-ent').value)||0
+      };
+      await apiCall('/finance/budget', 'POST', { month, totalBudget, categoryBudgets });
+      showToast('Budget saved! 🎯', 'success'); loadSummary();
+    }
+
+    // ===== SUMMARY =====
+    async function loadSummary() {
+      const data = await apiCall(`/finance/summary?month=${thisMonth}`);
+      document.getElementById('s-income').textContent = `₹${(data.totalIncome||0).toLocaleString()}`;
+      document.getElementById('s-expense').textContent = `₹${(data.totalExpenses||0).toLocaleString()}`;
+      const balance = data.balance || 0;
+      const balEl = document.getElementById('s-balance');
+      balEl.textContent = `₹${Math.abs(balance).toLocaleString()}`;
+      balEl.style.color = balance >= 0 ? 'var(--green)' : 'var(--red)';
+      const budget = data.budget?.totalBudget || 0;
+      document.getElementById('s-budget').textContent = `₹${budget.toLocaleString()}`;
+      if (budget > 0) {
+        const pct = Math.min(100, Math.round((data.totalExpenses / budget) * 100));
+        document.getElementById('budget-bar').style.width = pct + '%';
+        document.getElementById('budget-pct').textContent = pct + '% used';
+        document.getElementById('budget-left').textContent = `₹${Math.max(0, budget - data.totalExpenses).toLocaleString()} remaining`;
+        document.getElementById('budget-bar').style.background = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--orange)' : 'linear-gradient(90deg,var(--accent),var(--green))';
+      }
+    }
+
+    // ===== ANALYTICS =====
+    let barChart, compareChart;
+    async function loadAnalytics() {
+      const data = await apiCall(`/finance/summary?month=${thisMonth}`);
+      const trend = data.monthlyTrend || [];
+      const labels = trend.map(t=>t.month);
+      const totals = trend.map(t=>t.total);
+
+      if (barChart) barChart.destroy();
+      barChart = new Chart(document.getElementById('barChart'), {
+        type: 'bar', data: { labels, datasets: [{ label: 'Expenses (₹)', data: totals, backgroundColor: 'rgba(255,77,109,0.5)', borderColor: 'var(--red)', borderWidth: 2, borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#ccc' } } }, scales: { x: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+      });
+
+      if (compareChart) compareChart.destroy();
+      compareChart = new Chart(document.getElementById('compareChart'), {
+        type: 'bar', data: {
+          labels: ['This Month'],
+          datasets: [
+            { label: 'Income', data: [data.totalIncome], backgroundColor: 'rgba(0,212,170,0.6)', borderColor: 'var(--green)', borderWidth: 2, borderRadius: 8 },
+            { label: 'Expenses', data: [data.totalExpenses], backgroundColor: 'rgba(255,77,109,0.6)', borderColor: 'var(--red)', borderWidth: 2, borderRadius: 8 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#ccc' } } }, scales: { x: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#777' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+      });
+    }
+
+    loadSummary(); loadExpenses();
+  </script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Life – Login</title>
+  <meta name="description" content="Unified Student Life Management System – Login and Register" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+    .input-wrap .form-control { padding-left: 42px; }
+    .pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); background: none; border: none; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-logo">
+        <h1>🎓 Student Life</h1>
+        <p>Unified Management System</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</div>
+          <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</div>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="tab-pane active" id="pane-login">
+          <form id="login-form">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrap">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="login-email" class="form-control" placeholder="student@university.edu" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="login-password" class="form-control" placeholder="Your password" required />
+                <button type="button" class="pw-toggle" onclick="togglePw('login-password')">👁️</button>
+              </div>
+            </div>
+            <button type="submit" class="form-submit" id="login-btn">Sign In →</button>
+          </form>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="tab-pane" id="pane-register">
+          <form id="register-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <div class="input-wrap">
+                  <span class="input-icon">👤</span>
+                  <input type="text" id="reg-name" class="form-control" placeholder="Your full name" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Student ID</label>
+                <div class="input-wrap">
+                  <span class="input-icon">🎫</span>
+                  <input type="text" id="reg-sid" class="form-control" placeholder="e.g. STU2024001" required />
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-wrap">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="reg-email" class="form-control" placeholder="student@university.edu" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" required minlength="6" />
+                <button type="button" class="pw-toggle" onclick="togglePw('reg-password')">👁️</button>
+              </div>
+            </div>
+            <button type="submit" class="form-submit" id="register-btn">Create Account →</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) window.location.href = 'dashboard.html';
+
+    function switchTab(tab) {
+      document.getElementById('pane-login').classList.toggle('active', tab === 'login');
+      document.getElementById('pane-register').classList.toggle('active', tab === 'register');
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    }
+
+    function togglePw(id) {
+      const el = document.getElementById(id);
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.animation = 'fadeOut 0.4s ease forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
+    }
+
+    async function apiPost(endpoint, body) {
+      const res = await fetch(`${API}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      return { status: res.status, data: await res.json() };
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Signing in...'; btn.disabled = true;
+      try {
+        const { status, data } = await apiPost('/auth/login', {
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value
+        });
+        if (status === 200) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showToast('Welcome back! 👋', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 800);
+        } else {
+          showToast(data.message || 'Login failed', 'error');
+          btn.textContent = 'Sign In →'; btn.disabled = false;
+        }
+      } catch {
+        showToast('Cannot connect to server. Is it running?', 'error');
+        btn.textContent = 'Sign In →'; btn.disabled = false;
+      }
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('register-btn');
+      btn.textContent = 'Creating account...'; btn.disabled = true;
+      try {
+        const { status, data } = await apiPost('/auth/register', {
+          name: document.getElementById('reg-name').value,
+          email: document.getElementById('reg-email').value,
+          password: document.getElementById('reg-password').value,
+          studentId: document.getElementById('reg-sid').value
+        });
+        if (status === 201) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showToast('Account created! Welcome! 🎉', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 800);
+        } else {
+          showToast(data.message || 'Registration failed', 'error');
+          btn.textContent = 'Create Account →'; btn.disabled = false;
+        }
+      } catch {
+        showToast('Cannot connect to server.', 'error');
+        btn.textContent = 'Create Account →'; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

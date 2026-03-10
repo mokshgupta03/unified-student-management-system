@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Student Life</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <h1>🎓 Student Life</h1>
+        <span>Management System</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</a>
+        <a href="academics.html" class="nav-item"><span class="nav-icon">📚</span> Academics</a>
+        <a href="health.html" class="nav-item"><span class="nav-icon">💪</span> Health</a>
+        <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span> Finance</a>
+        <a href="profile.html" class="nav-item"><span class="nav-icon">👤</span> Profile</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="s-avatar">S</div>
+          <div class="user-details">
+            <div class="user-name" id="s-name">Student</div>
+            <div class="user-id" id="s-sid">Loading…</div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="page-header">
+        <h2 id="greeting">Good Morning! 👋</h2>
+        <p id="date-display"></p>
+      </div>
+
+      <!-- Reminder Banner -->
+      <div id="reminder-banner" style="display:none;background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.3);border-radius:12px;padding:14px 20px;margin-bottom:24px;display:flex;gap:12px;align-items:center;font-size:14px;color:var(--text-secondary);">
+        <span style="font-size:20px;">🔔</span>
+        <span id="reminder-text">Stay hydrated! Drink water regularly.</span>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card" style="--card-accent: linear-gradient(90deg, #6c63ff, #8b84ff); --icon-bg: rgba(108,99,255,0.15);">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-pending">–</div>
+            <div class="stat-label">Pending Tasks</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--card-accent: linear-gradient(90deg, #00d4aa, #00f5c4); --icon-bg: rgba(0,212,170,0.15);">
+          <div class="stat-icon">💧</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-water">–</div>
+            <div class="stat-label">Water Glasses Today</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--card-accent: linear-gradient(90deg, #ff9f43, #ffcc00); --icon-bg: rgba(255,159,67,0.15);">
+          <div class="stat-icon">💸</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-expense">–</div>
+            <div class="stat-label">Spent Today (₹)</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--card-accent: linear-gradient(90deg, #00b4d8, #0096c7); --icon-bg: rgba(0,180,216,0.15);">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-info">
+            <div class="stat-value" id="stat-study">–</div>
+            <div class="stat-label">Study Hours Today</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid: Assignments + Health -->
+      <div class="grid-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-title">📅 Upcoming Assignments</div>
+          <div id="upcoming-list"><div class="empty-state"><div class="empty-icon">📋</div><p>No pending assignments</p></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">💪 Today's Health Log</div>
+          <div id="health-today" style="display:grid;gap:12px;">
+            <div class="empty-state"><div class="empty-icon">🏥</div><p>No health log for today</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📊 Weekly Study Plan Progress</div>
+          <div class="chart-container"><canvas id="studyChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏃 Weekly Steps</div>
+          <div class="chart-container"><canvas id="stepsChart"></canvas></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000/api';
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = 'index.html';
+
+    // Sidebar
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`; t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => { t.style.animation = 'fadeOut 0.4s ease forwards'; setTimeout(() => t.remove(), 400); }, 3500);
+    }
+
+    async function api(endpoint) {
+      const res = await fetch(`${API}${endpoint}`, { headers: { Authorization: `Bearer ${token}` } });
+      return res.json();
+    }
+
+    // Greet + date
+    const hour = new Date().getHours();
+    const greetings = { morning: 'Good Morning! ☀️', afternoon: 'Good Afternoon! 🌤️', evening: 'Good Evening! 🌙' };
+    const g = hour < 12 ? greetings.morning : hour < 17 ? greetings.afternoon : greetings.evening;
+    document.getElementById('greeting').textContent = `${g} ${user.name || ''}`;
+    document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // User info sidebar
+    if (user.name) {
+      document.getElementById('s-name').textContent = user.name;
+      document.getElementById('s-sid').textContent = user.studentId || '';
+      document.getElementById('s-avatar').textContent = user.name[0].toUpperCase();
+    }
+
+    // Reminders
+    const reminders = ['💧 Stay hydrated! Drink a glass of water now.','😴 Get 7-8 hours of sleep tonight!','🏃 Time for a quick workout or walk!','📚 Focus on your pending assignments!'];
+    document.getElementById('reminder-text').textContent = reminders[Math.floor(Math.random() * reminders.length)];
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const data = await api('/dashboard');
+
+        // Stats
+        document.getElementById('stat-pending').textContent = data.stats.totalPending;
+        document.getElementById('stat-water').textContent = data.healthToday.waterGlasses ?? 0;
+        document.getElementById('stat-expense').textContent = `₹${data.totalExpensesToday ?? 0}`;
+        document.getElementById('stat-study').textContent = `${data.studyHoursToday ?? 0}h`;
+
+        // Upcoming assignments
+        const ul = document.getElementById('upcoming-list');
+        if (data.upcomingAssignments && data.upcomingAssignments.length) {
+          ul.innerHTML = data.upcomingAssignments.map(a => {
+            const due = new Date(a.dueDate);
+            const days = Math.ceil((due - new Date()) / 86400000);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-size:14px;font-weight:600;">${a.title}</div>
+                <div style="font-size:12px;color:var(--text-muted);">${a.subjectName} • Due in ${days} day${days !== 1 ? 's' : ''}</div>
+              </div>
+              <span class="badge badge-${a.priority}">${a.priority}</span>
+            </div>`;
+          }).join('');
+        }
+
+        // Health today
+        const ht = data.healthToday;
+        if (ht && (ht.waterGlasses || ht.sleepHours || ht.steps)) {
+          document.getElementById('health-today').innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div style="background:var(--bg-card);border-radius:10px;padding:14px;text-align:center;">
+                <div style="font-size:26px;">💧</div>
+                <div style="font-size:20px;font-weight:700;color:var(--blue);">${ht.waterGlasses}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Glasses</div>
+              </div>
+              <div style="background:var(--bg-card);border-radius:10px;padding:14px;text-align:center;">
+                <div style="font-size:26px;">😴</div>
+                <div style="font-size:20px;font-weight:700;color:var(--accent-light);">${ht.sleepHours}h</div>
+                <div style="font-size:11px;color:var(--text-muted);">Sleep</div>
+              </div>
+              <div style="background:var(--bg-card);border-radius:10px;padding:14px;text-align:center;">
+                <div style="font-size:26px;">👟</div>
+                <div style="font-size:20px;font-weight:700;color:var(--green);">${ht.steps?.toLocaleString()}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Steps</div>
+              </div>
+              <div style="background:var(--bg-card);border-radius:10px;padding:14px;text-align:center;">
+                <div style="font-size:26px;">🏋️</div>
+                <div style="font-size:14px;font-weight:700;color:var(--orange);">${ht.workoutType || 'None'}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Workout</div>
+              </div>
+            </div>`;
+        }
+      } catch (err) { showToast('Could not load dashboard data. Start your backend!', 'error'); }
+    }
+
+    // Charts
+    async function loadCharts() {
+      try {
+        const weekly = await api('/health/weekly');
+        const labels = weekly.labels?.map(d => d.split('-').slice(1).join('/')) || [];
+        const steps = weekly.weekly?.map(w => w.steps || 0) || [];
+        const sleep = weekly.weekly?.map(w => w.sleepHours || 0) || [];
+
+        new Chart(document.getElementById('studyChart'), {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{ label: 'Sleep Hours', data: sleep, backgroundColor: 'rgba(108,99,255,0.5)', borderColor: 'var(--accent)', borderWidth: 2, borderRadius: 8 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+        });
+
+        new Chart(document.getElementById('stepsChart'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Steps', data: steps,
+              borderColor: 'var(--green)', backgroundColor: 'rgba(0,212,170,0.1)',
+              fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: 'var(--green)'
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
+        });
+      } catch { /* charts optional */ }
+    }
+
+    loadDashboard();
+    loadCharts();
+  </script>
+</body>
+</html>
